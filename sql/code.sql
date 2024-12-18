@@ -1,4 +1,4 @@
-CREATE TABLE Pays(
+CREATE TABLE if not exists Pays(
    ID_Pays VARCHAR(50),
    Libéle VARCHAR(255),
    Code_Lettre VARCHAR(10),
@@ -8,7 +8,7 @@ CREATE TABLE Pays(
    UNIQUE(Code_Chiffre)
 );
 
-CREATE TABLE Virus(
+CREATE TABLE if not exists Virus(
    ID_Virus VARCHAR(50),
    Libéle VARCHAR(255),
    Date_Apparition DATE,
@@ -17,7 +17,7 @@ CREATE TABLE Virus(
    PRIMARY KEY(ID_Virus)
 );
 
-CREATE TABLE Données_Virus(
+CREATE TABLE if not exists Données_Virus(
    ID_Donnees VARCHAR(50),
    Date_du_jour DATE,
    Total_Cas INT,
