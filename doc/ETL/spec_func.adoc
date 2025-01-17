@@ -16,6 +16,12 @@ La solution vise à faciliter l’extraction de données provenant de différent
 - Centraliser les données transformées dans un fichier de sortie unique, organisé et prêt à l’emploi.
 - Fournir une base flexible pour des traitements ETL futurs.
 
+== Justification du Développement d’un Outil ETL Interne
+
+L'utilisation d'un ETL externe aurait impliqué des frais de licence continus, des coûts d'abonnement ou de support technique. En développant l'outil ETL en interne, nous avons évité ces coûts récurrents, tout en ayant la liberté de contrôler l’évolution du système sans dépendance à un fournisseur tiers. Cette indépendance nous permet également de réagir rapidement aux évolutions des besoins ou des formats de données sans attendre une mise à jour ou un patch de l'éditeur de l'outil ETL.
+
+De plus, le système de journalisation développé en interne permet un suivi détaillé des opérations, des succès et des erreurs, ce qui est essentiel dans le cadre de projets où les données traitées ont un impact direct sur des décisions stratégiques. La possibilité de personnaliser les messages d’erreur et de conserver une trace précise de chaque étape permet aux équipes techniques de résoudre rapidement les problèmes et de garantir la qualité des données en toute transparence. Les solutions ETL existantes proposent des fonctionnalités similaires, mais le degré de personnalisation et de granularité du logging dans notre outil interne est bien plus adapté à nos besoins.
+
 == Scope
 
 Cette solution ETL couvre les aspects suivants :
