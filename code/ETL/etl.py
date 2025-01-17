@@ -51,6 +51,11 @@ def load_data(df, output_file):
 
 # Pipeline ETL principal
 def etl_pipeline(input_file, file_type, output_file):
+    # Vérification de l'existence du fichier d'entrée
+    if not os.path.exists(input_file):
+        logging.error(f"Le fichier d'entrée spécifié n'existe pas : {input_file}")
+        raise FileNotFoundError(f"Le fichier d'entrée spécifié n'existe pas : {input_file}")
+
     # Extraction
     if file_type.lower() == "json":
         data = extract_json(input_file)
@@ -96,5 +101,7 @@ if __name__ == "__main__":
     try:
         logging.info("Début du pipeline ETL.")
         etl_pipeline(args.input_file, args.file_type, output_file_path)
+    except FileNotFoundError as e:
+        logging.error(f"Fichier introuvable : {str(e)}")
     except Exception as e:
         logging.error(f"Erreur lors de l'exécution du pipeline ETL : {str(e)}")
