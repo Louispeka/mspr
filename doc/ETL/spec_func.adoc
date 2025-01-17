@@ -54,7 +54,13 @@ image::funcdiagram.png[]
 
 == Stakeholders
 
-Les 
+Les parties prenantes principales incluent :
+
+L’OMS : organisation cliente qui utilisera les données transformées pour des analyses et des décisions stratégiques.
+
+Équipes analytiques : équipes de DATA ANALYZE IT, responsables de traiter les données pour répondre aux besoins spécifiques de l’OMS.
+
+Développeurs techniques : responsables du maintien et de l’évolution de la solution ETL.
 
 == Prérequis
 

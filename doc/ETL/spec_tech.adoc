@@ -1,0 +1,215 @@
+= Documentation technique de la Solution ETL
+:author: Louis Van Elsuve
+:date: 2024-12-18
+
+Pour plus d'informations, veuilez vous referencer a link:https://github.com/Louispeka/mspr/blob/main/doc/ETL/spec_func.adoc[la documentation fonctionnelle du projet. ]
+
+== Prérequis
+Le projet est développé en Python et nécessite que Python 3 soit installé sur le système où le programme sera exécuté. Assurez-vous que Python 3 est disponible et correctement configuré.
+
+=== Compatibilité multiplateforme
+Le programme doit pouvoir fonctionner sur différents systèmes d'exploitation, y compris Windows et macOS. C'est pourquoi il a été développé en Python avec les bibliothèques appropriées.
+
+== Dépendances 
+
+Le projet ETL repose sur plusieurs bibliothèques Python, chacune jouant un rôle clé dans la mise en œuvre des différentes étapes du pipeline. Voici une liste des dépendances utilisées et une description de leurs rôles :
+
+=== pandas
+- **Rôle :** Fournir des structures de données performantes, comme les DataFrames, qui permettent de manipuler facilement les données sous forme tabulaire. Cette bibliothèque est utilisée pour des opérations courantes telles que la suppression des doublons, la normalisation des colonnes et l'agrégation des valeurs. Elle constitue la base du traitement des données dans le pipeline.
+
+=== json
+- **Rôle :** Permettre la lecture et la manipulation des fichiers JSON. Cette bibliothèque native de Python est essentielle pour extraire des données structurées au format JSON et les convertir en un format compatible avec pandas pour un traitement ultérieur.
+
+=== argparse
+- **Rôle :** Fournir une interface pour gérer les arguments passés en ligne de commande. Grâce à cette bibliothèque, les utilisateurs peuvent spécifier les chemins d'entrée des fichiers JSON ou CSV, ainsi que le fichier de sortie. Cela rend l'exécution du pipeline flexible et adaptable.
+
+=== os
+- **Rôle :** Offrir des outils pour interagir avec le système de fichiers. Cette bibliothèque est utilisée pour vérifier l'existence des répertoires nécessaires (comme `log` et `output`) et les créer automatiquement si nécessaires. Elle garantit que le pipeline peut fonctionner de manière fluide sans configuration manuelle préalable.
+
+=== logging
+- **Rôle :** Permettre l'enregistrement des messages d'information, des erreurs et des étapes importantes dans un fichier de log. Cette bibliothèque aide à documenter l'exécution du pipeline, à diagnostiquer les erreurs et à surveiller les étapes critiques pour garantir la traçabilité.
+
+Ces dépendances sont indispensables pour la bonne exécution du pipeline ETL et doivent être disponibles dans l'environnement Python avant l'exécution du projet.
+
+
+== Product Requirements
+
+=== User Interface
+
+Le programme utilise une interface en ligne de commande (CLI) pour simplifier son utilisation. Lorsqu'un utilisateur exécute le programme depuis son terminal, il voit un message de bienvenue accompagné des options disponibles et des arguments qu'il peut utiliser. 
+
+=== Gestion des Arguments
+Le programme utilise le module `argparse` pour traiter les arguments passés par l'utilisateur lors de l'exécution. Ces arguments permettent de personnaliser le comportement du programme et de fournir les informations nécessaires à l'analyse des données.
+
+==== Parsing des Arguments
+Le programme analyse les arguments fournis pour récupérer des informations telles que :
+
+- Le chemin du fichier ou du répertoire source.
+
+- Le type du fichier source(JSON/CSV).
+
+- Le chemin du fichier de sortie.
+
+Si des arguments obligatoires sont manquants, le programme affiche un message d'erreur approprié.
+
+==== Exemple de gestion d'erreurs
+
+Si l'utilisateur oublie un argument obligatoire :
+
+====
+[,CLI]
+----
+usage: etl.py [-h] --input_file INPUT_FILE --file_type {json,csv} [--output_file OUTPUT_FILE]
+etl.py: error: the following arguments are required: --input_file, --file_type
+----
+====
+
+### Configuration des Logs
+Le programme enregistre les étapes de traitement et les erreurs dans un fichier de log pour permettre une traçabilité complète du processus ETL. Le dossier `log/` est créé automatiquement si nécessaire, et le fichier de log est nommé `etl.log`.
+
+
+### Extraction des Données
+Le programme permet d'extraire des données de fichiers au format JSON ou CSV. Selon le type de fichier spécifié, le programme utilise une fonction d'extraction dédiée.
+
+Si le type de fichier n'est pas correct, alors une erreur est retournée:
+
+====
+message dans les logs
+[,CLI]
+----
+Type de fichier non pris en charge : {file_type}
+----
+====
+
+====
+Exception levée
+[,CLI]
+----
+Le type de fichier doit être 'json' ou 'csv'.
+----
+====
+
+#### Extraction JSON
+L'extraction des données depuis un fichier JSON se fait avec la fonction `extract_json`. Si le fichier n'est pas trouvé ou s'il y a une erreur dans son format, le programme arrête l'extraction et renvoie le message suivant :
+
+
+====
+Message dans les logs 
+[,CLI]
+----
+  Le fichier d'entrée spécifié n'existe pas : {input_file}
+----
+====
+
+
+====
+Exception levée 
+[,CLI]
+----
+ FileNotFoundError: Le fichier d'entrée spécifié n'existe pas : {input_file}
+----
+====
+
+#### Extraction CSV
+L'extraction des données depuis un fichier CSV se fait avec la fonction `extract_csv`. Si le fichier n'est pas trouvé ou s'il y a une erreur dans son format, les messages d'erreur sont les memes que pour l'extraction CSV
+
+=== Transformation des données
+
+Les données extraites sont ensuite transformées, avec une suppression des doublons, une normalisation des noms de colonnes (mise en minuscules et suppression des espaces) et une agrégation des valeurs sur la colonne `category` si la colonne `value` existe. 
+
+====
+Message dans les logs 
+[,CLI]
+----
+Transformation des données : suppression des doublons, normalisation et agrégation.
+----
+====
+
+En cas d'erreur lors de la transformation, un message d'erreur sera généré.
+
+====
+Message dans les logs 
+[,CLI]
+----
+  Erreur lors de la transformation des données : {error_message}
+----
+====
+
+
+=== 3. Chargement des données
+Une fois les données transformées, elles sont chargées dans un fichier de sortie spécifié par l'utilisateur.
+
+
+
+====
+Message dans les logs 
+[,CLI]
+----
+Chargement des données transformées dans le fichier : {output_file}
+----
+====
+
+Si une erreur survient pendant le chargement des données: 
+
+====
+Message dans les logs 
+[,CLI]
+----
+  Erreur lors du chargement des données dans le fichier de sortie '{output_file}' : {error_message}
+----
+====
+
+
+== Gestion des erreurs
+
+Le pipeline ETL gère plusieurs types d'erreurs, avec des messages loggés à chaque étape du processus. Voici les messages d'erreur existants :
+
+1. **Fichier introuvable** : Si le fichier d'entrée n'existe pas, un message d'erreur sera loggé, et une exception `FileNotFoundError` sera levée.
+Le fichier d'entrée spécifié n'existe pas : {input_file}
+
+
+
+2. **Type de fichier invalide** : Si le type de fichier spécifié n'est ni `json` ni `csv`, un message d'erreur sera loggé et une exception `ValueError` sera levée.
+Type de fichier non pris en charge : {file_type}
+
+
+
+3. **Erreur d'extraction JSON** : Si une erreur se produit pendant l'extraction des données d'un fichier JSON, un message d'erreur sera loggé.
+Erreur lors de l'extraction des données du fichier JSON '{file_path}' : {error_message}
+
+
+
+4. **Erreur d'extraction CSV** : Si une erreur se produit pendant l'extraction des données d'un fichier CSV, un message d'erreur sera loggé.
+Erreur lors de l'extraction des données du fichier CSV '{file_path}' : {error_message}
+
+
+
+5. **Erreur de transformation des données** : Si une erreur survient pendant la transformation des données, un message d'erreur sera loggé.
+Erreur lors de la transformation des données : {error_message}
+
+
+
+6. **Erreur de chargement des données** : Si une erreur survient lors du chargement des données dans le fichier de sortie, un message d'erreur sera loggé.
+Erreur lors du chargement des données dans le fichier de sortie '{output_file}' : {error_message}
+
+
+
+7. **Erreur générale** : Si une erreur imprévue se produit durant l'exécution du pipeline, un message d'erreur général sera loggé.
+Erreur lors de l'exécution du pipeline ETL : {error_message}
+
+== Tests
+
+
+**Validation fonctionnelle**  
+Les tests fonctionnels garantissent que les différents modules ou composants mettent correctement en œuvre les exigences définies. Les tests doivent être effectués séparément pour les deux méthodes de récupération des journaux des modifications, le filtre du répertoire Terraform, et le module d'analyse.
+
+**Validation de la solution**  
+Les tests de solution assurent que les exigences définies sont satisfaites du point de vue des cas d'utilisation. Chaque cas d'utilisation majeur doit être validé isolément, puis tous les cas d'utilisation doivent être validés ensemble. L'objectif de ces tests est de valider la stabilité de la solution en ce qui concerne ses différents modules.
+
+**Validation des performances et de la robustesse**  
+Les tests de performance vérifient la conformité aux exigences de performance, tandis que les tests de robustesse visent à identifier les problèmes de stabilité et de fiabilité au fil du temps.
+
+== Conclusion
+
+Le pipeline ETL est conçu pour extraire, transformer et charger les données de manière efficace tout en fournissant des messages d'erreur clairs pour chaque étape critique du processus.
+Ce document décrit les étapes du pipeline ETL, les messages loggés à chaque étape et les erreurs qui peuvent se produire avec des messages associés.
