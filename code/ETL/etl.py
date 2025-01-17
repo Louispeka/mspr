@@ -81,13 +81,20 @@ if __name__ == "__main__":
         "--file_type", type=str, required=True, choices=["json", "csv"], help="Type de fichier (json ou csv)."
     )
     parser.add_argument(
-        "--output_file", type=str, default="cleaned_data.csv", help="Chemin du fichier de sortie."
+        "--output_file", type=str, default="cleaned_data.csv", help="Nom du fichier de sortie."
     )
 
     args = parser.parse_args()
 
+    # Créer le dossier output si nécessaire
+    output_dir = 'output'
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Construire le chemin complet pour le fichier de sortie
+    output_file_path = os.path.join(output_dir, args.output_file)
+
     try:
         logging.info("Début du pipeline ETL.")
-        etl_pipeline(args.input_file, args.file_type, args.output_file)
+        etl_pipeline(args.input_file, args.file_type, output_file_path)
     except Exception as e:
         logging.error(f"Erreur lors de l'exécution du pipeline ETL : {str(e)}")
