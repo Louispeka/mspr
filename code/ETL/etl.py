@@ -35,8 +35,8 @@ def transform_data(df):
     # Suppression des doublons
     df = df.drop_duplicates()
 
-    # Normalisation des noms de colonnes
-    df.columns = [col.lower().strip() for col in df.columns]
+    # Normalisation des noms de colonnes (minuscule, suppression des espaces autour, remplacement des espaces internes par des underscores)
+    df.columns = [col.lower().strip().replace(" ", "_") for col in df.columns]
 
     # Gestion des valeurs nulles : remplacement par la médiane pour les colonnes numériques
     num_cols = df.select_dtypes(include=["number"]).columns
@@ -52,10 +52,12 @@ def transform_data(df):
 
     return df
 
+
 # Chargement des données dans un fichier de sortie
 def load_data(df, output_file):
     logging.info(f"Chargement des données transformées dans le fichier : {output_file}")
-    df.to_csv(output_file, index=False)
+    df.to_csv(output_file, index=False, sep=';')  # Utilisation du séparateur ';'
+
 
 # Pipeline ETL principal
 def etl_pipeline(input_file, file_type, output_file):
