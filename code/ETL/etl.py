@@ -29,17 +29,25 @@ def extract_csv(file_path):
     logging.info(f"Extraction des données du fichier CSV : {file_path}")
     return pd.read_csv(file_path)
 
-# Transformation des données
 def transform_data(df):
-    logging.info("Transformation des données : suppression des doublons, normalisation et agrégation.")
+    logging.info("Transformation des données : suppression des doublons, normalisation, gestion des valeurs nulles et agrégation.")
+    
     # Suppression des doublons
     df = df.drop_duplicates()
 
-    # Normalisation (standardisation des noms de colonnes en minuscules)
+    # Normalisation des noms de colonnes
     df.columns = [col.lower().strip() for col in df.columns]
 
+    # Gestion des valeurs nulles : remplacement par la médiane pour les colonnes numériques
+    num_cols = df.select_dtypes(include=["number"]).columns
+    for col in num_cols:
+        if df[col].isnull().any():
+            median_value = df[col].median()
+            df[col].fillna(median_value, inplace=True)
+            logging.info(f"Valeurs nulles dans la colonne '{col}' remplacées par la médiane : {median_value}")
+
     # Agrégation si la colonne 'value' est présente
-    if 'value' in df.columns:
+    if 'value' in df.columns and 'category' in df.columns:
         df = df.groupby('category', as_index=False).sum()
 
     return df
